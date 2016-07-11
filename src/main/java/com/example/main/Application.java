@@ -11,9 +11,6 @@ import org.springframework.context.annotation.ComponentScan.Filter;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.FilterType;
 
-import com.example.spring.config.AfterConfig;
-import com.example.spring.config.RootConfig;
-
 /**
  * @author gimbyeongsu
  * 
@@ -23,19 +20,14 @@ import com.example.spring.config.RootConfig;
 public class Application {
 	private static final Logger LOGGER = LoggerFactory.getLogger(Application.class);
 
-	private static final Object[] CONFIG_CLASS = { Application.class, RootConfig.class, AfterConfig.class };
-
 	public Application() {
 		LOGGER.debug("생성자 Application()");
 	}
 
 	public static void main(String[] args) throws IOException {
 		LOGGER.debug("start");
-		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(CONFIG_CLASS);
+		SpringApplicationBuilder springApplicationBuilder = new SpringApplicationBuilder(Application.class);
 		SpringApplication springApplication = springApplicationBuilder.build();
 		springApplication.run();
-		while(true){
-			System.in.read();
-		}
 	}
 }

@@ -4,6 +4,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+/**
+ * @author gimbyeongsu
+ * 
+ */
 @Component
 public class TestComponent {
 	private static final Logger LOGGER = LoggerFactory.getLogger(TestComponent.class);
