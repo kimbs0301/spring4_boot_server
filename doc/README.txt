@@ -10,4 +10,5 @@ git commit -a -m "ok"
 git push
 
 
-
+$ ssh -p 10001 user@localhost
+> endpoint invoke shutdown

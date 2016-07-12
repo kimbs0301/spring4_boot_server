@@ -66,8 +66,8 @@ public class ServerConfig {
 		ssc.setOption(StandardSocketOptions.SO_RCVBUF, 0);
 		ssc.bind(new InetSocketAddress(bootConfigFactory.getIp(), bootConfigFactory.getPort()), 100);
 
-		ExecutorService acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(bootConfigFactory.getAcceptThreadName(), false,
-				bootConfigFactory.getAcceptThreadPriority()));
+		ExecutorService acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(
+				bootConfigFactory.getAcceptThreadName(), false, bootConfigFactory.getAcceptThreadPriority()));
 
 		AcceptThread acceptThread = new AcceptThread(ssc, bootConfigFactory, readThreadPool());
 		acceptThreadExecutorService.execute(acceptThread);

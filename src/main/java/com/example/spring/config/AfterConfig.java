@@ -34,7 +34,7 @@ public class AfterConfig {
 	}
 
 	@Bean
-	public String sqlSessionFactory(ApplicationContext applicationContext) throws Exception {
+	public String info(ApplicationContext applicationContext) throws Exception {
 		Map<String, Object> map = applicationContext.getBeansWithAnnotation(Configuration.class);
 		for (String key : map.keySet()) {
 			LOGGER.debug("{} {}", key, map.get(key));
