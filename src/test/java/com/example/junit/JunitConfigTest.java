@@ -32,5 +32,8 @@ public class JunitConfigTest {
 
 		LOGGER.debug("{}", environment.getRequiredProperty("server.port"));
 		LOGGER.debug("{}", environment.getRequiredProperty("lang.ko"));
+		
+		
+		System.in.read();
 	}
 }

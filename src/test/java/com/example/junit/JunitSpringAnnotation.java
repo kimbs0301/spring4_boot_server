@@ -9,15 +9,13 @@ import org.springframework.boot.test.SpringApplicationConfiguration;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.TestPropertySource;
 
-import com.example.spring.config.RootConfig;
-
 /**
  * @author gimbyeongsu
  * 
  */
 @Target(ElementType.TYPE)
 @Retention(RetentionPolicy.RUNTIME)
-@SpringApplicationConfiguration(classes = { JunitConfig.class, RootConfig.class }, initializers = JunitYamlAppCtxInitializer.class)
+@SpringApplicationConfiguration(classes = { JunitConfig.class }, initializers = JunitYamlAppCtxInitializer.class)
 @ActiveProfiles(profiles = { "junit" })
 @TestPropertySource(locations = { "classpath:application-junit.properties" })
 public @interface JunitSpringAnnotation {

@@ -7,17 +7,14 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.env.Environment;
 
 import com.example.spring.server.ReadThreadPool;
-
 
 /**
  * @author gimbyeongsu
  * 
  */
-@Profile({ "local" })
 @Configuration
 @DependsOn(value = { "rootConfig", "serverConfig" })
 public class AfterConfig {
