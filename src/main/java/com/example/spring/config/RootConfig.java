@@ -46,12 +46,16 @@ public class RootConfig {
 	// }
 
 	@Bean
-	public static PropertySourcesPlaceholderConfigurer properties() throws IOException {
+	public static PropertySourcesPlaceholderConfigurer properties(Environment environment) throws IOException {
+		String[] activeProfiles = environment.getActiveProfiles();
+		List<String> profiles = Lists.newArrayList(activeProfiles);
+		String activeProfile = profiles.get(0);
+		LOGGER.debug("activeProfile:{}", activeProfile);
 		PropertySourcesPlaceholderConfigurer propertySourcesPlaceholderConfigurer = new PropertySourcesPlaceholderConfigurer();
 		YamlPropertiesFactoryBean yamlProperties = new YamlPropertiesFactoryBean();
-		yamlProperties.setResources(new ClassPathResource("application-junit.yml"));
+		yamlProperties.setResources(new ClassPathResource("application-" + activeProfile + ".yml"));
 		PropertiesFactoryBean properties = new PropertiesFactoryBean();
-		properties.setLocations(new ClassPathResource("application-junit.properties"));
+		properties.setLocations(new ClassPathResource("application-" + activeProfile + ".properties"));
 		propertySourcesPlaceholderConfigurer.setPropertiesArray(yamlProperties.getObject(), properties.getObject());
 		return propertySourcesPlaceholderConfigurer;
 	}
@@ -73,9 +77,15 @@ public class RootConfig {
 		properties.setLocations(classPathResources);
 
 		YamlPropertiesFactoryBean yamlProperties = new YamlPropertiesFactoryBean();
-		yamlProperties.setResources(new ClassPathResource("application-junit.yml"));
+		yamlProperties.setResources(new ClassPathResource("application-" + getActiveProfile() + ".yml"));
 		PropertiesFactoryBean propertiesFactory = new PropertiesFactoryBean();
 		propertiesFactory.setPropertiesArray(yamlProperties.getObject(), properties.getObject());
 		return propertiesFactory;
+	}
+
+	private String getActiveProfile() {
+		String[] activeProfiles = environment.getActiveProfiles();
+		List<String> profiles = Lists.newArrayList(activeProfiles);
+		return profiles.get(0);
 	}
 }
