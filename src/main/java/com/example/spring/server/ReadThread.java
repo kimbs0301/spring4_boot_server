@@ -1,14 +1,13 @@
 package com.example.spring.server;
 
 import java.io.IOException;
+import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
-
-import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,15 +42,16 @@ public final class ReadThread implements Runnable {
 		if (sc != null) {
 			final int handlerID = this.handlerID.getAndIncrement();
 			try {
-				final WorkHandler att = new WorkHandlerImpl(sc);
+				final ReadHandler att = new ReadHandlerImpl(sc);
 				sc.register(s, SelectionKey.OP_READ, att);
 				att.connect(threadNumber, handlerID);
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOGGER.error("", e);
 				if (sc != null) {
 					try {
 						sc.close();
 					} catch (IOException ie) {
+						LOGGER.error("", ie);
 					}
 				}
 			}
@@ -63,7 +63,7 @@ public final class ReadThread implements Runnable {
 		try {
 			s = Selector.open();
 		} catch (IOException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 			System.exit(0);
 		}
 
@@ -77,18 +77,21 @@ public final class ReadThread implements Runnable {
 						try {
 							final SelectionKey sk = it.next();
 							if (sk.isValid()) {
-								final WorkHandler r = (WorkHandler) sk.attachment();
+								final ReadHandler r = (ReadHandler) sk.attachment();
 								if (r != null) {
 									r.received(sk);
 								}
 							}
 						} catch (Exception e) {
-							e.printStackTrace();
+							LOGGER.error("", e);
 						}
 					}
 				}
+			} catch (ClosedSelectorException e) {
+				LOGGER.info("ClosedSelectorException");
+				break;
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOGGER.error("", e);
 			}
 			if (accept.isEmpty() == false) {
 				register(s);

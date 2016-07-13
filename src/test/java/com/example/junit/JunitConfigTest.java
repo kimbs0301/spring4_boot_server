@@ -8,8 +8,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.example.junit.JunitSpringAnnotation;
-
 /**
  * @author gimbyeongsu
  * 
@@ -32,8 +30,5 @@ public class JunitConfigTest {
 
 		LOGGER.debug("{}", environment.getRequiredProperty("server.port"));
 		LOGGER.debug("{}", environment.getRequiredProperty("lang.ko"));
-		
-		
-		System.in.read();
 	}
 }

@@ -18,6 +18,7 @@ import com.example.spring.server.AcceptThread;
 import com.example.spring.server.BootConfigFactory;
 import com.example.spring.server.ReadThread;
 import com.example.spring.server.ReadThreadPool;
+import com.example.spring.server.SessionChannelManager;
 import com.example.spring.server.ThreadFactoryImpl;
 
 /**
@@ -39,6 +40,12 @@ public class ServerConfig {
 	public BootConfigFactory bootConfigFactory() {
 		BootConfigFactory bootConfigFactory = new BootConfigFactory();
 		return bootConfigFactory;
+	}
+
+	@Bean
+	public SessionChannelManager sessionChannelManager() {
+		SessionChannelManager sessionChannelManager = new SessionChannelManager();
+		return sessionChannelManager;
 	}
 
 	@Bean
@@ -69,8 +76,8 @@ public class ServerConfig {
 		ssc.setOption(StandardSocketOptions.SO_RCVBUF, 0);
 		ssc.bind(new InetSocketAddress(bootConfigFactory.getIp(), bootConfigFactory.getPort()), 100);
 
-		acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(bootConfigFactory.getAcceptThreadName(), false, bootConfigFactory
-				.getAcceptThreadPriority()));
+		acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(bootConfigFactory
+				.getAcceptThreadName(), false, bootConfigFactory.getAcceptThreadPriority()));
 
 		AcceptThread acceptThread = new AcceptThread(ssc, bootConfigFactory, readThreadPool());
 		acceptThreadExecutorService.execute(acceptThread);

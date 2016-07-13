@@ -6,7 +6,7 @@ package com.example.spring.server;
  */
 public class BootConfigFactory {
 	private String ip = "127.0.0.1";
-	private int port = 8000;
+	private int port = 8080;
 	private int acceptThreadPriority = Thread.MAX_PRIORITY;
 	private String acceptThreadName = "Accept";
 	private int readThreadPriority = Thread.MAX_PRIORITY;

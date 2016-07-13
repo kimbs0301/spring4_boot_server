@@ -36,7 +36,7 @@ public final class AcceptThread implements Runnable {
 			s = Selector.open();
 			ssc.register(s, SelectionKey.OP_ACCEPT);
 		} catch (NullPointerException | IOException e) {
-			e.printStackTrace();
+			LOGGER.error("", e);
 			System.exit(0);
 		}
 		//
@@ -61,9 +61,9 @@ public final class AcceptThread implements Runnable {
 					readThreadPool.accept(readThreadPos, sc);
 				}
 			} catch (ClosedChannelException e) {
-				e.printStackTrace();
+				LOGGER.info("ClosedChannelException");
 			} catch (Exception e) {
-				e.printStackTrace();
+				LOGGER.error("", e);
 			}
 		}
 	}
