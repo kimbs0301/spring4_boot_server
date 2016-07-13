@@ -10,6 +10,7 @@ import java.nio.channels.SocketChannel;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
 /**
  * @author gimbyeongsu
@@ -21,6 +22,8 @@ public final class AcceptThread implements Runnable {
 	private ReadThreadPool readThreadPool;
 	private final int readPoolSize;
 	private final ServerSocketChannel ssc;
+	@Autowired
+	private SessionChannelManager sessionChannelManager;
 	private boolean isRun = true;
 
 	public AcceptThread(ServerSocketChannel ssc, BootConfigFactory bootConfigFactory, ReadThreadPool readThreadPool) {
@@ -57,8 +60,9 @@ public final class AcceptThread implements Runnable {
 					sc.setOption(StandardSocketOptions.SO_LINGER, 0);
 					sc.setOption(StandardSocketOptions.SO_SNDBUF, 1024 * 8);
 					sc.setOption(StandardSocketOptions.SO_RCVBUF, 1024 * 8);
-					final int readThreadPos = ix = (++ix) % readPoolSize;
+					final int readThreadPos = sessionChannelManager.minPos();
 					readThreadPool.accept(readThreadPos, sc);
+					sessionChannelManager.add(readThreadPos);
 				}
 			} catch (ClosedChannelException e) {
 				LOGGER.info("ClosedChannelException");

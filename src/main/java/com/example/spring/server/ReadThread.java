@@ -7,6 +7,8 @@ import java.nio.channels.Selector;
 import java.nio.channels.SocketChannel;
 import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
@@ -19,30 +21,41 @@ import org.slf4j.LoggerFactory;
 public final class ReadThread implements Runnable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReadThread.class);
 
+	private int I = - 1;
 	private final ConcurrentLinkedQueue<SocketChannel> accept = new ConcurrentLinkedQueue<SocketChannel>();
 	private final int threadNumber;
+	private final WorkThread[] workThread;
 	private Selector s;
 	private final AtomicInteger handlerID;
+	private SessionChannelManager sessionChannelManager;
+	private int workThreadSize;
+	private ExecutorService workThreadExecutorService;
 
-	public ReadThread(AtomicInteger handlerID, String name, int number) {
+	public ReadThread(AtomicInteger handlerID, SessionChannelManager sessionChannelManager, String name, int number) {
 		this.handlerID = handlerID;
 		this.threadNumber = number;
-	}
-
-	public void wakeup() {
-		s.wakeup();
+		this.sessionChannelManager = sessionChannelManager;
+		this.workThreadSize = 10;
+		this.workThread = new WorkThread[workThreadSize];
+		this.workThreadExecutorService = Executors.newFixedThreadPool(workThread.length, new ThreadFactoryImpl("("
+				+ number + ")" + WorkThread.WORK_THREAD_NAME, false, Thread.NORM_PRIORITY));
+		for (int i = 0, size = workThread.length; i < size; ++i) {
+			this.workThread[i] = new WorkThread();
+		}
 	}
 
 	public void setAccept(SocketChannel a) {
 		accept.add(a);
+		s.wakeup();
 	}
 
 	private void register(Selector s) {
 		SocketChannel sc = accept.poll();
 		if (sc != null) {
+			final int idx = I = ( ++I ) % workThreadSize;
 			final int handlerID = this.handlerID.getAndIncrement();
 			try {
-				final ReadHandler att = new ReadHandlerImpl(sc);
+				final ReadHandler att = new ReadHandlerImpl(workThreadExecutorService , workThread[ idx ] , sessionChannelManager , sc);
 				sc.register(s, SelectionKey.OP_READ, att);
 				att.connect(threadNumber, handlerID);
 			} catch (Exception e) {
@@ -106,5 +119,6 @@ public final class ReadThread implements Runnable {
 		} catch (IOException e) {
 			LOGGER.error("", e);
 		}
+		workThreadExecutorService.shutdown();
 	}
 }

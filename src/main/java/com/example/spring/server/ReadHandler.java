@@ -11,5 +11,7 @@ public interface ReadHandler {
 
 	public void received(SelectionKey selKey);
 
+	public void addWork();
+
 	public void close();
 }

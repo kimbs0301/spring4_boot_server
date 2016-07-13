@@ -2,6 +2,10 @@ package com.example.spring.server;
 
 import java.nio.channels.SocketChannel;
 
+/**
+ * @author gimbyeongsu
+ * 
+ */
 public final class SessionCentext {
 	private final SocketChannel sc;
 	private final int threadNum;

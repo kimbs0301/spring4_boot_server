@@ -3,6 +3,10 @@ package com.example.spring.server;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+/**
+ * @author gimbyeongsu
+ * 
+ */
 public abstract class AcceptController {
 	private final ReentrantReadWriteLock reentrantReadWriteLock = new ReentrantReadWriteLock(false);
 	private final Lock readLock = reentrantReadWriteLock.readLock();

@@ -10,6 +10,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author gimbyeongsu
+ * 
+ */
 public final class SocketChannelGroup {
 	private final static Logger LOGGER = LoggerFactory.getLogger(SocketChannelGroup.class);
 

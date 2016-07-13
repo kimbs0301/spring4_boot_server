@@ -33,10 +33,9 @@ public final class ReadThreadPool {
 		}
 	}
 
-	public void accept(int readNum, SocketChannel a) {
+	public void accept(int readNum, SocketChannel sc) {
 		ReadThread r = readRead[readNum];
-		r.setAccept(a);
-		r.wakeup();
+		r.setAccept(sc);
 	}
 	
 	public void shutdown() {

@@ -37,7 +37,7 @@ public class IoClientTest {
 		InetAddress addr = InetAddress.getByName("127.0.0.1");
 		InetSocketAddress isa = new InetSocketAddress(addr, 8080);
 		long start = System.currentTimeMillis();
-		for (int i = 0; i < 1000; ++i) {
+		for (int i = 0; i < 10; ++i) {
 			Socket socket = new Socket();
 			socket.setReuseAddress(false);
 			socket.setSoTimeout(5000);

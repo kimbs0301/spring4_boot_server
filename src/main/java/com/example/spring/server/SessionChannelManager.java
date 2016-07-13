@@ -12,6 +12,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * @author gimbyeongsu
+ * 
+ */
 public final class SessionChannelManager extends AcceptController {
 	private final static Logger LOGGER = LoggerFactory.getLogger(SessionChannelManager.class);
 
@@ -49,7 +53,7 @@ public final class SessionChannelManager extends AcceptController {
 		// add( threadNumber ); AcceptThread
 		SessionCentext sc = new SessionCentext(threadNumber, handler, sChannel);
 		sContextMap.put(handler, sc);
-		// LOGGER.info( "{}]Connection handlerID : {}" , new Object[] { threadNumber , handler } );
+		LOGGER.info("{}]Connection handlerID : {}", threadNumber, handler);
 		return sc;
 	}
 

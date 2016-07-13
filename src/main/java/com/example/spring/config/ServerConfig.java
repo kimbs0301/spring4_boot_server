@@ -45,6 +45,7 @@ public class ServerConfig {
 	@Bean
 	public SessionChannelManager sessionChannelManager() {
 		SessionChannelManager sessionChannelManager = new SessionChannelManager();
+		sessionChannelManager.init(bootConfigFactory().getReadThreadSize());
 		return sessionChannelManager;
 	}
 
@@ -55,7 +56,7 @@ public class ServerConfig {
 		String name = bootConfigFactory.getReadThreadName();
 		ReadThread[] poolRead = new ReadThread[size];
 		for (int i = 0; i < size; ++i) {
-			poolRead[i] = new ReadThread(handlerID, name + i, i);
+			poolRead[i] = new ReadThread(handlerID, sessionChannelManager(), name + i, i);
 		}
 		return poolRead;
 	}
