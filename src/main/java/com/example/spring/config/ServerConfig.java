@@ -7,6 +7,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.PreDestroy;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
@@ -27,6 +29,7 @@ public class ServerConfig {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
 
 	private final AtomicInteger handlerID = new AtomicInteger(1);
+	private ExecutorService acceptThreadExecutorService;
 
 	public ServerConfig() {
 		LOGGER.debug("생성자 ServerConfig()");
@@ -50,14 +53,14 @@ public class ServerConfig {
 		return poolRead;
 	}
 
-	@Bean
+	@Bean(destroyMethod = "shutdown")
 	public ReadThreadPool readThreadPool() {
 		ReadThread[] readThreads = readThreads();
 		ReadThreadPool readThreadPool = new ReadThreadPool(bootConfigFactory(), readThreads);
 		return readThreadPool;
 	}
 
-	@Bean
+	@Bean(destroyMethod = "shutdown")
 	public AcceptThread acceptThread() throws Exception {
 		BootConfigFactory bootConfigFactory = bootConfigFactory();
 		ServerSocketChannel ssc = ServerSocketChannel.open();
@@ -66,11 +69,17 @@ public class ServerConfig {
 		ssc.setOption(StandardSocketOptions.SO_RCVBUF, 0);
 		ssc.bind(new InetSocketAddress(bootConfigFactory.getIp(), bootConfigFactory.getPort()), 100);
 
-		ExecutorService acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(
-				bootConfigFactory.getAcceptThreadName(), false, bootConfigFactory.getAcceptThreadPriority()));
+		acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(bootConfigFactory.getAcceptThreadName(), false, bootConfigFactory
+				.getAcceptThreadPriority()));
 
 		AcceptThread acceptThread = new AcceptThread(ssc, bootConfigFactory, readThreadPool());
 		acceptThreadExecutorService.execute(acceptThread);
 		return acceptThread;
+	}
+
+	@PreDestroy
+	public void shutdown() {
+		LOGGER.debug("");
+		acceptThreadExecutorService.shutdown();
 	}
 }

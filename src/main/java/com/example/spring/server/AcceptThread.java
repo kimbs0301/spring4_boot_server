@@ -8,15 +8,20 @@ import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author gimbyeongsu
  * 
  */
 public final class AcceptThread implements Runnable {
-	// public final static String ACCETP_THREAD_NAME = "Accept";
+	private static final Logger LOGGER = LoggerFactory.getLogger(AcceptThread.class);
+
 	private ReadThreadPool readThreadPool;
 	private final int readPoolSize;
 	private final ServerSocketChannel ssc;
+	private boolean isRun = true;
 
 	public AcceptThread(ServerSocketChannel ssc, BootConfigFactory bootConfigFactory, ReadThreadPool readThreadPool) {
 		this.ssc = ssc;
@@ -35,14 +40,14 @@ public final class AcceptThread implements Runnable {
 			System.exit(0);
 		}
 		//
-		int ix = - 1;
+		int ix = -1;
 		//
-		while (true) {
+		while (isRun) {
 			try {
 				if (s.select(1000L) > 0) {
 					s.selectedKeys().clear();
 				}
-				
+
 				final SocketChannel sc = ssc.accept();
 				if (sc != null) {
 					sc.configureBlocking(false);
@@ -60,6 +65,16 @@ public final class AcceptThread implements Runnable {
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
+		}
+	}
+
+	public void shutdown() {
+		LOGGER.debug("");
+		isRun = false;
+		try {
+			ssc.close();
+		} catch (IOException e) {
+			LOGGER.error("", e);
 		}
 	}
 }

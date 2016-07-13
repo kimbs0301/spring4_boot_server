@@ -8,11 +8,18 @@ import java.util.Iterator;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import javax.annotation.PreDestroy;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author gimbyeongsu
  * 
  */
 public final class ReadThread implements Runnable {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ReadThread.class);
+
 	private final ConcurrentLinkedQueue<SocketChannel> accept = new ConcurrentLinkedQueue<SocketChannel>();
 	private final int threadNumber;
 	private Selector s;
@@ -66,8 +73,7 @@ public final class ReadThread implements Runnable {
 					if (s.selectedKeys().size() > 10) {
 						System.out.println(s.selectedKeys().size());
 					}
-					for (Iterator<SelectionKey> it = s.selectedKeys().iterator(); it.hasNext(); it
-							.remove()) {
+					for (Iterator<SelectionKey> it = s.selectedKeys().iterator(); it.hasNext(); it.remove()) {
 						try {
 							final SelectionKey sk = it.next();
 							if (sk.isValid()) {
@@ -87,6 +93,15 @@ public final class ReadThread implements Runnable {
 			if (accept.isEmpty() == false) {
 				register(s);
 			}
+		}
+	}
+
+	public void shutdown() {
+		LOGGER.debug("");
+		try {
+			s.close();
+		} catch (IOException e) {
+			LOGGER.error("", e);
 		}
 	}
 }

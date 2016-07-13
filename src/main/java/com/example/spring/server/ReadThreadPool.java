@@ -4,11 +4,15 @@ import java.nio.channels.SocketChannel;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * @author gimbyeongsu
  * 
  */
 public final class ReadThreadPool {
+	private static final Logger LOGGER = LoggerFactory.getLogger(ReadThreadPool.class);
 	private BootConfigFactory bootConfigFactory;
 	private final ReadThread[] readRead;
 	private ExecutorService poolReadExecutorService;
@@ -29,13 +33,17 @@ public final class ReadThreadPool {
 		}
 	}
 
-	public void stopPool() {
-		poolReadExecutorService.shutdown();
-	}
-
 	public void accept(int readNum, SocketChannel a) {
 		ReadThread r = readRead[readNum];
 		r.setAccept(a);
 		r.wakeup();
+	}
+	
+	public void shutdown() {
+		LOGGER.debug("");
+		poolReadExecutorService.shutdown();
+		for(ReadThread each : readRead) {
+			each.shutdown();
+		}
 	}
 }
