@@ -11,8 +11,10 @@ import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 
 import com.example.spring.server.AcceptThread;
 import com.example.spring.server.BootConfigFactory;
@@ -20,6 +22,7 @@ import com.example.spring.server.ReadThread;
 import com.example.spring.server.ReadThreadPool;
 import com.example.spring.server.SessionChannelManager;
 import com.example.spring.server.ThreadFactoryImpl;
+import com.example.spring.server.WorkThread;
 
 /**
  * @author gimbyeongsu
@@ -29,8 +32,11 @@ import com.example.spring.server.ThreadFactoryImpl;
 public class ServerConfig {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ServerConfig.class);
 
-	private final AtomicInteger handlerID = new AtomicInteger(1);
-	private ExecutorService acceptThreadExecutorService;
+	@Autowired
+	private Environment environment;
+	private AtomicInteger handlerID = new AtomicInteger(1);
+	private ExecutorService acceptThreadExecutor;
+	private ServerSocketChannel ssc;
 
 	public ServerConfig() {
 		LOGGER.debug("생성자 ServerConfig()");
@@ -38,25 +44,30 @@ public class ServerConfig {
 
 	@Bean
 	public BootConfigFactory bootConfigFactory() {
-		BootConfigFactory bootConfigFactory = new BootConfigFactory();
-		return bootConfigFactory;
+		BootConfigFactory config = new BootConfigFactory();
+		config.setReadThreadSize(3);
+		return config;
 	}
 
 	@Bean
 	public SessionChannelManager sessionChannelManager() {
-		SessionChannelManager sessionChannelManager = new SessionChannelManager();
-		sessionChannelManager.init(bootConfigFactory().getReadThreadSize());
-		return sessionChannelManager;
+		return new SessionChannelManager(bootConfigFactory().getReadThreadSize());
 	}
 
 	@Bean
 	public ReadThread[] readThreads() {
-		BootConfigFactory bootConfigFactory = bootConfigFactory();
-		int size = bootConfigFactory.getReadThreadSize();
-		String name = bootConfigFactory.getReadThreadName();
-		ReadThread[] poolRead = new ReadThread[size];
-		for (int i = 0; i < size; ++i) {
-			poolRead[i] = new ReadThread(handlerID, sessionChannelManager(), name + i, i);
+		BootConfigFactory config = bootConfigFactory();
+		int readThreadSize = config.getReadThreadSize();
+		int workThreadSize = config.getWorkThreadSize();
+		SessionChannelManager sessionChannelManager = sessionChannelManager();
+
+		ReadThread[] poolRead = new ReadThread[readThreadSize];
+		for (int i = 0; i < readThreadSize; ++i) {
+			WorkThread[] workThread = new WorkThread[workThreadSize];
+			for (int j = 0, size = workThread.length; j < size; ++j) {
+				workThread[j] = new WorkThread(config);
+			}
+			poolRead[i] = new ReadThread(config, workThread, handlerID, sessionChannelManager, i);
 		}
 		return poolRead;
 	}
@@ -70,24 +81,27 @@ public class ServerConfig {
 
 	@Bean(destroyMethod = "shutdown")
 	public AcceptThread acceptThread() throws Exception {
-		BootConfigFactory bootConfigFactory = bootConfigFactory();
-		ServerSocketChannel ssc = ServerSocketChannel.open();
+		String ip = environment.getRequiredProperty("server.ip");
+		int port = environment.getRequiredProperty("server.port", Integer.class);
+		int backlog = environment.getRequiredProperty("server.backlog", Integer.class);
+		BootConfigFactory config = bootConfigFactory();
+
+		ssc = ServerSocketChannel.open();
 		ssc.configureBlocking(false);
 		ssc.setOption(StandardSocketOptions.SO_REUSEADDR, false);
 		ssc.setOption(StandardSocketOptions.SO_RCVBUF, 0);
-		ssc.bind(new InetSocketAddress(bootConfigFactory.getIp(), bootConfigFactory.getPort()), 100);
+		ssc.bind(new InetSocketAddress(ip, port), backlog);
 
-		acceptThreadExecutorService = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(bootConfigFactory
-				.getAcceptThreadName(), false, bootConfigFactory.getAcceptThreadPriority()));
-
-		AcceptThread acceptThread = new AcceptThread(ssc, bootConfigFactory, readThreadPool());
-		acceptThreadExecutorService.execute(acceptThread);
+		AcceptThread acceptThread = new AcceptThread(ssc, readThreadPool());
+		acceptThreadExecutor = Executors.newSingleThreadExecutor(new ThreadFactoryImpl(config.getAcceptThreadName(),
+				false, config.getAcceptThreadPriority()));
+		acceptThreadExecutor.execute(acceptThread);
 		return acceptThread;
 	}
 
 	@PreDestroy
 	public void shutdown() {
 		LOGGER.debug("");
-		acceptThreadExecutorService.shutdown();
+		acceptThreadExecutor.shutdown();
 	}
 }

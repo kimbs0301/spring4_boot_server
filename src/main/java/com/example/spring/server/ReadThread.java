@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
 public final class ReadThread implements Runnable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReadThread.class);
 
-	private int I = - 1;
+	private int idx = -1;
 	private final ConcurrentLinkedQueue<SocketChannel> accept = new ConcurrentLinkedQueue<SocketChannel>();
 	private final int threadNumber;
 	private final WorkThread[] workThread;
@@ -29,19 +29,17 @@ public final class ReadThread implements Runnable {
 	private final AtomicInteger handlerID;
 	private SessionChannelManager sessionChannelManager;
 	private int workThreadSize;
-	private ExecutorService workThreadExecutorService;
+	private ExecutorService workThreadExecutor;
 
-	public ReadThread(AtomicInteger handlerID, SessionChannelManager sessionChannelManager, String name, int number) {
+	public ReadThread(BootConfigFactory config, WorkThread[] workThread, AtomicInteger handlerID,
+			SessionChannelManager sessionChannelManager, int number) {
 		this.handlerID = handlerID;
 		this.threadNumber = number;
 		this.sessionChannelManager = sessionChannelManager;
-		this.workThreadSize = 10;
-		this.workThread = new WorkThread[workThreadSize];
-		this.workThreadExecutorService = Executors.newFixedThreadPool(workThread.length, new ThreadFactoryImpl("("
-				+ number + ")" + WorkThread.WORK_THREAD_NAME, false, Thread.NORM_PRIORITY));
-		for (int i = 0, size = workThread.length; i < size; ++i) {
-			this.workThread[i] = new WorkThread();
-		}
+		this.workThreadSize = config.getWorkThreadSize();
+		this.workThreadExecutor = Executors.newFixedThreadPool(workThread.length + 1, new ThreadFactoryImpl("(" + number
+				+ ")" + config.getWorkThreadName(), false, config.getWorkThreadPriority()));
+		this.workThread = workThread;
 	}
 
 	public void setAccept(SocketChannel a) {
@@ -52,10 +50,11 @@ public final class ReadThread implements Runnable {
 	private void register(Selector s) {
 		SocketChannel sc = accept.poll();
 		if (sc != null) {
-			final int idx = I = ( ++I ) % workThreadSize;
+			final int workThreadPos = idx = (++idx) % workThreadSize;
 			final int handlerID = this.handlerID.getAndIncrement();
 			try {
-				final ReadHandler att = new ReadHandlerImpl(workThreadExecutorService , workThread[ idx ] , sessionChannelManager , sc);
+				final ReadHandler att = new ReadHandlerImpl(workThreadExecutor, workThread[workThreadPos],
+						sessionChannelManager, sc);
 				sc.register(s, SelectionKey.OP_READ, att);
 				att.connect(threadNumber, handlerID);
 			} catch (Exception e) {
@@ -101,8 +100,7 @@ public final class ReadThread implements Runnable {
 					}
 				}
 			} catch (ClosedSelectorException e) {
-				LOGGER.info("ClosedSelectorException");
-				break;
+				// LOGGER.info("ClosedSelectorException");
 			} catch (Exception e) {
 				LOGGER.error("", e);
 			}
@@ -119,6 +117,6 @@ public final class ReadThread implements Runnable {
 		} catch (IOException e) {
 			LOGGER.error("", e);
 		}
-		workThreadExecutorService.shutdown();
+		workThreadExecutor.shutdown();
 	}
 }

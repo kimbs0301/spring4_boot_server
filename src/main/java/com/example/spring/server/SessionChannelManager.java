@@ -22,11 +22,7 @@ public final class SessionChannelManager extends AcceptController {
 	private final ConcurrentHashMap<Integer, SessionCentext> sContextMap = new ConcurrentHashMap<Integer, SessionCentext>();
 	private boolean isOne = true;
 
-	public SessionChannelManager() {
-
-	}
-
-	public void init(int poolSize) {
+	public SessionChannelManager(int poolSize) {
 		if (isOne) {
 			createIdx(poolSize);
 			isOne = false;

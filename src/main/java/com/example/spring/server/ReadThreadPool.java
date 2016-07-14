@@ -13,23 +13,25 @@ import org.slf4j.LoggerFactory;
  */
 public final class ReadThreadPool {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReadThreadPool.class);
-	private BootConfigFactory bootConfigFactory;
+
+	private BootConfigFactory config;
 	private final ReadThread[] readRead;
-	private ExecutorService poolReadExecutorService;
-	private int size = 0;
+	private ExecutorService poolReadExecutor;
+	private int readReadPoolSize = 0;
 
 	public ReadThreadPool(BootConfigFactory bootConfigFactory, ReadThread[] readRead) {
-		this.size = bootConfigFactory.getReadThreadSize();
+		this.config = bootConfigFactory;
+		this.readReadPoolSize = this.config.getReadThreadSize();
 		this.readRead = readRead;
-		this.bootConfigFactory = bootConfigFactory;
 	}
 
 	public void startPool() {
-		String name = bootConfigFactory.getReadThreadName();
-		int priority = bootConfigFactory.getReadThreadPriority();
-		poolReadExecutorService = Executors.newFixedThreadPool(size, new ThreadFactoryImpl(name, false, priority));
-		for (int i = 0; i < size; ++i) {
-			poolReadExecutorService.execute(readRead[i]);
+		String name = config.getReadThreadName();
+		int priority = config.getReadThreadPriority();
+		poolReadExecutor = Executors.newFixedThreadPool(readReadPoolSize + 1, new ThreadFactoryImpl(name, false,
+				priority));
+		for (int i = 0; i < readReadPoolSize; ++i) {
+			poolReadExecutor.execute(readRead[i]);
 		}
 	}
 
@@ -37,11 +39,11 @@ public final class ReadThreadPool {
 		ReadThread r = readRead[readNum];
 		r.setAccept(sc);
 	}
-	
+
 	public void shutdown() {
 		LOGGER.debug("");
-		poolReadExecutorService.shutdown();
-		for(ReadThread each : readRead) {
+		poolReadExecutor.shutdown();
+		for (ReadThread each : readRead) {
 			each.shutdown();
 		}
 	}

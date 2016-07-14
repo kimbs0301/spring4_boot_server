@@ -43,26 +43,18 @@ public class AfterConfig {
 	}
 
 	@Bean
-	public String info(ApplicationContext applicationContext) throws Exception {
+	public Map<String, Object> info(ApplicationContext applicationContext) throws Exception {
 		Map<String, Object> map = applicationContext.getBeansWithAnnotation(Configuration.class);
 		for (String key : map.keySet()) {
 			LOGGER.debug("{} {}", key, map.get(key));
 		}
-		return "ok";
+		return map;
 	}
 
 	@PostConstruct
 	public void init() {
 		LOGGER.debug("");
-
 		readThreadPool.startPool();
-
-		String[] activeProfiles = environment.getActiveProfiles();
-		for (String activeProfile : activeProfiles) {
-			LOGGER.debug("{}", activeProfile);
-		}
-
-		LOGGER.debug("{}", environment.getRequiredProperty("lang.ko"));
 
 		Runnable task = new Runnable() {
 

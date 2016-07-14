@@ -21,7 +21,7 @@ import com.example.spring.server.protocol.Packet;
 public final class ReadHandlerImpl implements ReadHandler {
 	private static final Logger LOGGER = LoggerFactory.getLogger(ReadHandlerImpl.class);
 
-	private final ExecutorService workThreadExecutorService;
+	private final ExecutorService workThreadExecutor;
 	private final WorkThread worker;
 	private final SessionChannelManager sessionChannelManager;
 	private SocketChannel sc;
@@ -31,8 +31,9 @@ public final class ReadHandlerImpl implements ReadHandler {
 	private int rb; // 읽어들인 바이트수
 	private int pb; // 패킷으로부터 최종적으로 읽어들여야 하는 바이트수
 
-	public ReadHandlerImpl(ExecutorService workThreadExecutorService, WorkThread work, SessionChannelManager sessionChannelManager, SocketChannel sc) {
-		this.workThreadExecutorService = workThreadExecutorService;
+	public ReadHandlerImpl(ExecutorService workThreadExecutorService, WorkThread work,
+			SessionChannelManager sessionChannelManager, SocketChannel sc) {
+		this.workThreadExecutor = workThreadExecutorService;
 		this.worker = work;
 		this.sessionChannelManager = sessionChannelManager;
 		this.sc = sc;
@@ -52,7 +53,8 @@ public final class ReadHandlerImpl implements ReadHandler {
 		LOGGER.debug("rb:{}", rb);
 		if (rb == 0) {
 			LOGGER.debug("패킷 처음 진입");
-			rBuf.limit(Packet.HEAD_A_SIZE); // 해더 읽어들일 사이즈만큼 설정
+			// 해더 읽어들일 사이즈만큼 설정
+			rBuf.limit(Packet.HEAD_A_SIZE);
 			try {
 				ret = sc.read(rBuf); // 해더 읽어 들임
 				rb += ret; // 수신패킷 합치기
@@ -98,7 +100,8 @@ public final class ReadHandlerImpl implements ReadHandler {
 					close();
 					return;
 				} else {
-					LOGGER.warn("패킷해더 다 못읽어 들임 remaining:{} pos:{} rBytes:{} pBytes:{}", new Object[] { rBuf.remaining(), rBuf.position(), rb, pb });
+					LOGGER.warn("패킷해더 다 못읽어 들임 remaining:{} pos:{} rBytes:{} pBytes:{}", rBuf.remaining(),
+							rBuf.position(), rb, pb);
 				}
 			} catch (BufferUnderflowException e) {
 				LOGGER.error("{}", e.getMessage());
@@ -202,7 +205,7 @@ public final class ReadHandlerImpl implements ReadHandler {
 					return;
 				} else // if ( rBuf.position( ) == rBuf.limit( ) && ret == 0 )
 				{
-					LOGGER.warn("잘못된 패킷 수신 pos:{} limit:{}", new Object[] { rBuf.position(), rBuf.limit() });
+					LOGGER.warn("잘못된 패킷 수신 pos:{} limit:{}", rBuf.position(), rBuf.limit());
 					sk.cancel();
 					close();
 					return;
@@ -240,9 +243,9 @@ public final class ReadHandlerImpl implements ReadHandler {
 			case 0x07:
 				worker.queue.add(pool); // 작업등록
 				int state = worker.state.getAndSet(WorkerState.NEW_CMD); // 새 Command를 추가했다고 통보한다.
-				if (state == WorkerState.WAIT) // 만약 이전 상태가 대기 상태였다면
-				{
-					workThreadExecutorService.execute(worker);
+				// 만약 이전 상태가 대기 상태였다면
+				if (state == WorkerState.WAIT) {
+					workThreadExecutor.execute(worker);
 				}
 
 				session.setAliveTime(System.currentTimeMillis()); // TEST

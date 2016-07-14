@@ -53,9 +53,8 @@ public abstract class AcceptController {
 		int min = idx[0];
 		int index = 0;
 		try {
-			for (int size = idx.length, i = 1; i < size; i++) {
+			for (int size = idx.length, i = 1; i < size; ++i) {
 				if (idx[i] < min) {
-					// min = idx[ i ];
 					index = i;
 					break;
 				}

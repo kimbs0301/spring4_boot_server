@@ -20,15 +20,13 @@ public final class AcceptThread implements Runnable {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AcceptThread.class);
 
 	private ReadThreadPool readThreadPool;
-	private final int readPoolSize;
 	private final ServerSocketChannel ssc;
 	@Autowired
 	private SessionChannelManager sessionChannelManager;
 	private boolean isRun = true;
 
-	public AcceptThread(ServerSocketChannel ssc, BootConfigFactory bootConfigFactory, ReadThreadPool readThreadPool) {
+	public AcceptThread(ServerSocketChannel ssc, ReadThreadPool readThreadPool) {
 		this.ssc = ssc;
-		this.readPoolSize = bootConfigFactory.getReadThreadSize();
 		this.readThreadPool = readThreadPool;
 	}
 
@@ -42,8 +40,6 @@ public final class AcceptThread implements Runnable {
 			LOGGER.error("", e);
 			System.exit(0);
 		}
-		//
-		int ix = -1;
 		//
 		while (isRun) {
 			try {
@@ -69,6 +65,12 @@ public final class AcceptThread implements Runnable {
 			} catch (Exception e) {
 				LOGGER.error("", e);
 			}
+		}
+		
+		try {
+			s.close();
+		} catch (IOException e) {
+			LOGGER.error("", e);
 		}
 	}
 

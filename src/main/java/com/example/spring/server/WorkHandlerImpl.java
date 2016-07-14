@@ -29,12 +29,6 @@ public final class WorkHandlerImpl implements WorkHandler {
 		this.sc = sc;
 	}
 
-	// @Override
-	// public void setSocketChannel( SocketChannel sc )
-	// {
-	// this.sc = sc;
-	// }
-
 	@Override
 	public void work(ByteBuffer sendBuf) {
 		try {
