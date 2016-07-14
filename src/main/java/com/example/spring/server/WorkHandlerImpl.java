@@ -66,7 +66,7 @@ public final class WorkHandlerImpl implements WorkHandler {
 					LOGGER.warn("SEND LIMIT:{}", sc.toString());
 					break;
 				}
-				// LOGGER.info( "write" );
+				LOGGER.info("write");
 			} while (sendBuf.hasRemaining());
 		} catch (ClosedChannelException e) {
 			LOGGER.error("WRITE:{}", e.getMessage());
