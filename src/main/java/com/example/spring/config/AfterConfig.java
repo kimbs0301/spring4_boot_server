@@ -1,5 +1,6 @@
 package com.example.spring.config;
 
+import java.util.ArrayList;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -12,22 +13,30 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.env.Environment;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
+import org.springframework.scheduling.support.CronTrigger;
 
 import com.example.spring.server.ReadThreadPool;
+import com.example.spring.server.SessionCentext;
+import com.example.spring.server.SessionChannelManager;
 
 /**
  * @author gimbyeongsu
  * 
  */
 @Configuration
-@DependsOn(value = { "rootConfig", "serverConfig" })
+@DependsOn(value = { "rootConfig", "serverConfig", "schedulingConfig" })
 public class AfterConfig {
 	private static final Logger LOGGER = LoggerFactory.getLogger(AfterConfig.class);
 
 	@Autowired
 	private Environment environment;
 	@Autowired
+	private ThreadPoolTaskScheduler threadPoolTaskScheduler;
+	@Autowired
 	private ReadThreadPool readThreadPool;
+	@Autowired
+	private SessionChannelManager sessionChannelManager;
 
 	public AfterConfig() {
 		LOGGER.debug("생성자 AfterConfig()");
@@ -54,5 +63,19 @@ public class AfterConfig {
 		}
 
 		LOGGER.debug("{}", environment.getRequiredProperty("lang.ko"));
+
+		Runnable task = new Runnable() {
+
+			@Override
+			public void run() {
+				LOGGER.debug("");
+				ArrayList<SessionCentext> list = sessionChannelManager.getSessionList();
+				for (SessionCentext each : list) {
+					LOGGER.debug("{}", each);
+				}
+			}
+		};
+
+		threadPoolTaskScheduler.schedule(task, new CronTrigger("1/3 * * * * ?"));
 	}
 }
