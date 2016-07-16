@@ -103,10 +103,7 @@ public final class ReadHandlerImpl implements ReadHandler {
 					LOGGER.warn("패킷해더 다 못읽어 들임 remaining:{} pos:{} rBytes:{} pBytes:{}", rBuf.remaining(),
 							rBuf.position(), rb, pb);
 				}
-			} catch (BufferUnderflowException e) {
-				LOGGER.error("{}", e.getMessage());
-				return;
-			} catch (NotYetConnectedException e) {
+			} catch (BufferUnderflowException | NotYetConnectedException e) {
 				LOGGER.error("{}", e.getMessage());
 				return;
 			} catch (ClosedChannelException e) {
@@ -170,10 +167,7 @@ public final class ReadHandlerImpl implements ReadHandler {
 					LOGGER.warn("패킷해더 다 못읽어 들임");
 				}
 
-			} catch (BufferUnderflowException e) {
-				LOGGER.error("{}", e.getMessage());
-				return;
-			} catch (NotYetConnectedException e) {
+			} catch (BufferUnderflowException | NotYetConnectedException e) {
 				LOGGER.error("{}", e.getMessage());
 				return;
 			} catch (ClosedChannelException e) {
@@ -210,7 +204,7 @@ public final class ReadHandlerImpl implements ReadHandler {
 					close();
 					return;
 				}
-			} catch (NotYetConnectedException e) {
+			} catch (BufferUnderflowException | NotYetConnectedException e) {
 				LOGGER.error("{}", e.getMessage());
 				return;
 			} catch (ClosedChannelException e) {
@@ -255,9 +249,7 @@ public final class ReadHandlerImpl implements ReadHandler {
 				LOGGER.warn("default sop:{}", sop);
 				break;
 			}
-		} catch (BufferUnderflowException e) {
-			LOGGER.error("{}", e.getMessage());
-		} catch (IndexOutOfBoundsException e) {
+		} catch (BufferUnderflowException | IndexOutOfBoundsException e) {
 			LOGGER.error("{}", e.getMessage());
 		}
 		// 패킷수신 초기화

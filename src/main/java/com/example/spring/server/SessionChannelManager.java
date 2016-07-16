@@ -46,7 +46,7 @@ public final class SessionChannelManager extends AcceptController {
 	 * @param sChannel
 	 */
 	public SessionCentext addSession(int threadNumber, int handler, SocketChannel sChannel) {
-		// add( threadNumber ); AcceptThread
+		add(threadNumber);
 		SessionCentext sc = new SessionCentext(threadNumber, handler, sChannel);
 		sContextMap.put(handler, sc);
 		LOGGER.info("{}]Connection handlerID : {}", threadNumber, handler);
@@ -61,13 +61,12 @@ public final class SessionChannelManager extends AcceptController {
 	public void removeSession(int threadNumber, int handler) {
 		sub(threadNumber);
 		SessionCentext sc = sContextMap.remove(handler);
-		// disconnectThread.add( sc.getSocketChannel( ) );
 		try {
 			sc.getSocketChannel().close();
 		} catch (IOException e) {
 			LOGGER.error("", e);
 		}
-		// LOGGER.info( "{}]close from handlerID : {}" , new Object[] { threadNumber , handler } );
+		LOGGER.info("{}]close from handlerID : {}", threadNumber, handler);
 	}
 
 	/**

@@ -68,6 +68,6 @@ public class AfterConfig {
 			}
 		};
 
-		threadPoolTaskScheduler.schedule(task, new CronTrigger("1/3 * * * * ?"));
+		threadPoolTaskScheduler.schedule(task, new CronTrigger("* * * * * ?"));
 	}
 }
