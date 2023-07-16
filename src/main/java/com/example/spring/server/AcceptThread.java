@@ -51,11 +51,11 @@ public final class AcceptThread implements Runnable {
 				if (sc != null) {
 					sc.configureBlocking(false);
 					sc.setOption(StandardSocketOptions.SO_KEEPALIVE, false);
-					sc.setOption(StandardSocketOptions.SO_REUSEADDR, false);
-					sc.setOption(StandardSocketOptions.TCP_NODELAY, false);
-					sc.setOption(StandardSocketOptions.SO_LINGER, 0);
+					sc.setOption(StandardSocketOptions.SO_REUSEADDR, true);
+					sc.setOption(StandardSocketOptions.TCP_NODELAY, true);
+					//sc.setOption(StandardSocketOptions.SO_LINGER, 0);
 					sc.setOption(StandardSocketOptions.SO_SNDBUF, 1024 * 8);
-					sc.setOption(StandardSocketOptions.SO_RCVBUF, 1024 * 8);
+					//sc.setOption(StandardSocketOptions.SO_RCVBUF, 1024 * 8);
 					final int readThreadPos = sessionChannelManager.minPos();
 					readThreadPool.accept(readThreadPos, sc);
 					sessionChannelManager.add(readThreadPos);
