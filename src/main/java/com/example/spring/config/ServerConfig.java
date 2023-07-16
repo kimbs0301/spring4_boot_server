@@ -88,8 +88,8 @@ public class ServerConfig {
 
 		ssc = ServerSocketChannel.open();
 		ssc.configureBlocking(false);
-		ssc.setOption(StandardSocketOptions.SO_REUSEADDR, false);
-		ssc.setOption(StandardSocketOptions.SO_RCVBUF, 0);
+		// ssc.setOption(StandardSocketOptions.SO_REUSEADDR, false);
+		ssc.setOption(StandardSocketOptions.SO_RCVBUF, 1024 * 8);
 		ssc.bind(new InetSocketAddress(ip, port), backlog);
 
 		AcceptThread acceptThread = new AcceptThread(ssc, readThreadPool());
